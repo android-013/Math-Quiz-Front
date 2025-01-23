@@ -52,7 +52,7 @@ function checkAnswer(selectedAnswer, correctAnswer) {
         resultEl.textContent = `Wrong! The correct answer was ${correctAnswer}.`;
         resultEl.style.color = 'red';
     }
-    setTimeout(renderQuestion, 2000); // Show next question after 2 seconds
+    setTimeout(renderQuestion, 1000); // Show next question after 2 seconds
 }
 
 renderQuestion();
