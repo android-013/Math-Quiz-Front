@@ -1,42 +1,38 @@
 let difficulty;
-
-let answer;
-
-let score=0;
-
-let questionNumber=1;
-
+let answer = 0;
+let score = 0;
+let questionNumber = 1;
 
 
 const levels = {
 
     veryeasy:{
-        numbers:2,
+        count:2,
         max:10,
         operators:["+"]
     },
 
     easy:{
-        numbers:2,
+        count:2,
         max:20,
         operators:["+","-"]
     },
 
     medium:{
-        numbers:3,
-        max:50,
+        count:3,
+        max:30,
         operators:["+","-","*"]
     },
 
     hard:{
-        numbers:4,
-        max:100,
-        operators:["+","-","*","/"]
+        count:4,
+        max:50,
+        operators:["+","-","*"]
     },
 
     veryhard:{
-        numbers:5,
-        max:500,
+        count:5,
+        max:100,
         operators:["+","-","*","/"]
     }
 
@@ -46,61 +42,59 @@ const levels = {
 
 function startGame(level){
 
-difficulty=levels[level];
+    difficulty = levels[level];
+
+    score=0;
+    questionNumber=1;
 
 
-document.getElementById("menu").style.display="none";
+    document.getElementById("menu").style.display="none";
 
-document.getElementById("game").classList.remove("hidden");
-
-
-score=0;
-
-questionNumber=1;
+    document.getElementById("game")
+    .classList.remove("hidden");
 
 
-updateScore();
+    updateScore();
 
-generateQuestion();
+    generateQuestion();
 
 }
+
 
 
 
 function randomNumber(){
 
-return Math.floor(
-Math.random()*difficulty.max
-)+1;
+    return Math.floor(
+        Math.random()*difficulty.max
+    )+1;
 
 }
 
+
+
+
 function generateQuestion(){
 
-    let numbers = [];
-    let operators = [];
+    let numbers=[];
+    let ops=[];
 
-    // Generate required number of values
 
-    for(let i=0;i<difficulty.numbers;i++){
+    for(let i=0;i<difficulty.count;i++){
 
-        numbers.push(
-            Math.floor(
-                Math.random()*difficulty.max
-            )+1
-        );
+        numbers.push(randomNumber());
 
     }
 
 
-    // Generate operators
 
-    for(let i=0;i<difficulty.numbers-1;i++){
+    for(let i=0;i<difficulty.count-1;i++){
 
-        operators.push(
+        ops.push(
             difficulty.operators[
                 Math.floor(
-                    Math.random()*difficulty.operators.length
+                    Math.random()*
+                    difficulty.operators.length
                 )
             ]
         );
@@ -109,17 +103,16 @@ function generateQuestion(){
 
 
 
-    // Create expression
-
     let expression="";
 
     for(let i=0;i<numbers.length;i++){
 
         expression += numbers[i];
 
-        if(i<operators.length){
+        if(i<ops.length){
 
-            expression += " "+operators[i]+" ";
+            expression += " "
+            +ops[i]+" ";
 
         }
 
@@ -127,39 +120,75 @@ function generateQuestion(){
 
 
 
-    // Calculate answer safely
-
-    try{
-
-        answer = Math.round(
-            Function(
-                "return "+expression
-            )()*100
-        )/100;
-
-    }
-
-    catch{
-
-        generateQuestion();
-        return;
-
-    }
-
+    answer = calculate(numbers,ops);
 
 
     document.getElementById("question")
-    .innerHTML = expression+" = ?";
-
-
-
-    createOptions();
+    .innerHTML =
+    expression+" = ?";
 
 
     document.getElementById("qno")
     .innerHTML=questionNumber;
 
+
+    createOptions();
+
 }
+
+
+
+
+
+function calculate(numbers,ops){
+
+    let result=numbers[0];
+
+
+    for(let i=0;i<ops.length;i++){
+
+        let num=numbers[i+1];
+
+
+        switch(ops[i]){
+
+
+            case "+":
+
+            result += num;
+
+            break;
+
+
+            case "-":
+
+            result -= num;
+
+            break;
+
+
+            case "*":
+
+            result *= num;
+
+            break;
+
+
+            case "/":
+
+            result /= num;
+
+            break;
+
+        }
+
+    }
+
+
+    return Number(result.toFixed(2));
+
+}
+
 
 
 
@@ -167,133 +196,161 @@ function generateQuestion(){
 function createOptions(){
 
 
-let options=[answer];
+    let options=[answer];
 
 
-while(options.length<4){
-
-let wrong =
-answer+
-Math.floor(Math.random()*20)-10;
+    let attempts=0;
 
 
-if(!options.includes(wrong)
-&& wrong>=0)
+    while(options.length<4 && attempts<100){
 
-options.push(wrong);
-
-}
+        attempts++;
 
 
-options.sort(()=>Math.random()-0.5);
+        let wrong =
+        answer +
+        Math.floor(Math.random()*20)-10;
 
 
-
-let box=document.getElementById("options");
-
-box.innerHTML="";
-
+        wrong=Number(
+            wrong.toFixed(2)
+        );
 
 
-options.forEach(value=>{
+        if(
+            !options.includes(wrong)
+        ){
 
+            options.push(wrong);
 
-let btn=document.createElement("button");
+        }
 
-
-btn.innerHTML=value;
-
-
-btn.onclick=function(){
-
-checkAnswer(value,btn);
-
-};
-
-
-box.appendChild(btn);
-
-
-});
-
-
-}
+    }
 
 
 
+    // emergency backup
+
+    while(options.length<4){
+
+        options.push(
+            answer + options.length
+        );
+
+    }
 
 
-function checkAnswer(value,button){
 
-
-let buttons=
-document.querySelectorAll("#options button");
-
-
-buttons.forEach(b=>b.disabled=true);
+    options.sort(
+        ()=>Math.random()-0.5
+    );
 
 
 
-if(value===answer){
-
-button.classList.add("correct");
-
-score++;
-
-document.getElementById("result")
-.innerHTML="✅ Correct!";
+    let area =
+    document.getElementById("options");
 
 
-}
-
-else{
+    area.innerHTML="";
 
 
-button.classList.add("wrong");
+
+    options.forEach(value=>{
 
 
-document.getElementById("result")
-.innerHTML=
-"❌ Correct answer: "+answer;
+        let btn=document.createElement("button");
 
 
-buttons.forEach(b=>{
-
-if(Number(b.innerHTML)===answer)
-
-b.classList.add("correct");
+        btn.innerHTML=value;
 
 
-});
+        btn.onclick=function(){
+
+            checkAnswer(value,btn);
+
+        };
+
+
+        area.appendChild(btn);
+
+
+    });
 
 
 }
 
 
-updateScore();
 
+
+
+function checkAnswer(value,btn){
+
+
+    let buttons =
+    document.querySelectorAll(
+        "#options button"
+    );
+
+
+    buttons.forEach(b=>{
+        b.disabled=true;
+    });
+
+
+
+    if(value===answer){
+
+
+        score++;
+
+        btn.classList.add("correct");
+
+
+        document.getElementById("result")
+        .innerHTML="✅ Correct!";
+
+
+    }
+    else{
+
+
+        btn.classList.add("wrong");
+
+
+        document.getElementById("result")
+        .innerHTML=
+        "❌ Correct Answer: "+answer;
+
+
+    }
+
+
+
+    updateScore();
 
 }
+
 
 
 
 function nextQuestion(){
 
-questionNumber++;
+    questionNumber++;
 
-document.getElementById("result")
-.innerHTML="";
+    document.getElementById("result")
+    .innerHTML="";
 
 
-generateQuestion();
+    generateQuestion();
 
 }
 
 
 
+
 function updateScore(){
 
-document.getElementById("score")
-.innerHTML=score;
+    document.getElementById("score")
+    .innerHTML=score;
 
 }
