@@ -8,32 +8,37 @@ let questionNumber=1;
 
 
 
-const levels={
+const levels = {
 
-veryeasy:{
-    max:10,
-    operators:["+"]
-},
+    veryeasy:{
+        numbers:2,
+        max:10,
+        operators:["+"]
+    },
 
-easy:{
-    max:20,
-    operators:["+","-"]
-},
+    easy:{
+        numbers:2,
+        max:20,
+        operators:["+","-"]
+    },
 
-medium:{
-    max:50,
-    operators:["+","-","*"]
-},
+    medium:{
+        numbers:3,
+        max:50,
+        operators:["+","-","*"]
+    },
 
-hard:{
-    max:100,
-    operators:["+","-","*","/"]
-},
+    hard:{
+        numbers:4,
+        max:100,
+        operators:["+","-","*","/"]
+    },
 
-veryhard:{
-    max:500,
-    operators:["+","-","*","/"]
-}
+    veryhard:{
+        numbers:5,
+        max:500,
+        operators:["+","-","*","/"]
+    }
 
 };
 
@@ -70,79 +75,89 @@ Math.random()*difficulty.max
 
 }
 
-
-
-
 function generateQuestion(){
 
+    let numbers = [];
+    let operators = [];
 
-let a=randomNumber();
+    // Generate required number of values
 
-let b=randomNumber();
+    for(let i=0;i<difficulty.numbers;i++){
 
+        numbers.push(
+            Math.floor(
+                Math.random()*difficulty.max
+            )+1
+        );
 
-let op=
-difficulty.operators[
-Math.floor(
-Math.random()*difficulty.operators.length
-)
-];
-
-
-if(op=="/"){
-
-a=a*b;
-
-}
+    }
 
 
-let expression=
-`${a} ${op} ${b}`;
+    // Generate operators
 
+    for(let i=0;i<difficulty.numbers-1;i++){
 
-switch(op){
+        operators.push(
+            difficulty.operators[
+                Math.floor(
+                    Math.random()*difficulty.operators.length
+                )
+            ]
+        );
 
-case "+":
-
-answer=a+b;
-
-break;
-
-
-case "-":
-
-answer=a-b;
-
-break;
-
-
-case "*":
-
-answer=a*b;
-
-break;
-
-
-case "/":
-
-answer=a/b;
-
-break;
-
-}
-
-
-document.getElementById("question")
-.innerHTML=expression+" = ?";
+    }
 
 
 
-createOptions();
+    // Create expression
+
+    let expression="";
+
+    for(let i=0;i<numbers.length;i++){
+
+        expression += numbers[i];
+
+        if(i<operators.length){
+
+            expression += " "+operators[i]+" ";
+
+        }
+
+    }
 
 
-document.getElementById("qno")
-.innerHTML=questionNumber;
 
+    // Calculate answer safely
+
+    try{
+
+        answer = Math.round(
+            Function(
+                "return "+expression
+            )()*100
+        )/100;
+
+    }
+
+    catch{
+
+        generateQuestion();
+        return;
+
+    }
+
+
+
+    document.getElementById("question")
+    .innerHTML = expression+" = ?";
+
+
+
+    createOptions();
+
+
+    document.getElementById("qno")
+    .innerHTML=questionNumber;
 
 }
 
